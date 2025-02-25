@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { loginUser } from "../../services/authServices"; // Import Firebase login function
+import { loginUser } from "../../services/AuthServices";
 
 function Login() {
   const [loading, setLoading] = useState(false); // State for Loader
