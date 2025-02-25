@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { TourModalForm } from "./../../Models/TourModals/TourModalForm";
 import { TourDetailsModal } from "./../../Models/TourModals/TourDetailsModal";
-import { getTours, addTour, updateTour, deleteTour } from "../../services/tourServices";
+import { getTours, addTour, updateTour, deleteTour } from "../../services/TourServices";
 
 const TourList = () => {
   const [tours, setTours] = useState([]);
