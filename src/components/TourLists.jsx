@@ -1,20 +1,24 @@
 export const tourTypes = [
-    "Adventure Tour",
-    "Cultural Tour",
-    "Honeymoon Tour",
-    "Family Tour",
-    "Wildlife Tour",
-    "Religious Tour",
-    "Beach Tour",
-    "Historical Tour",
+  "Adventure",
+  "Cultural",
+  "Relaxation",
+  "Historical",
+  "Wildlife & Safari",
+  "Luxury",
+  "Eco & Nature",
+  "Religious & Pilgrimage",
+  "Cruise",
+  "Road Trips & Self-Drive",
+  "Sports & Adventure Activities",
+  "Food & Culinary",
+  "Educational & Study",
+  "Volunteering & Humanitarian",
+  "Photography",
+  "Honeymoon",
+  "Festival & Event-Based",
+  "Winter & Snow",
+  "Island & Beach",
+  "Shopping"
   ];
-  
-  export const priceOptions = [
-    "Rs. 5,000 per person",
-    "Rs. 10,000 per person",
-    "Rs. 15,000 per person",
-    "Rs. 20,000 per person",
-    "Rs. 25,000 per person",
-    "Rs. 30,000 per person",
-  ];
+
   

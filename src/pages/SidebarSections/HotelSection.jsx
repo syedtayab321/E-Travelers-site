@@ -1,150 +1,172 @@
-import React, { useState } from "react";
-import { FaEye, FaEdit, FaTrash, FaPlus } from "react-icons/fa";
-import HotelDetailsModal from "./../../Models/HotelModals/HotelDetailsModal";
-import HotelFormModal from "./../../Models/HotelModals/HotelModalForm";
+import React, { useState, useEffect } from "react";
+import { FaEye, FaEdit, FaTrash, FaPlus, FaHotel, FaStar, FaBed } from "react-icons/fa";
+import { MdOutlineNoFood, MdLocationOn } from "react-icons/md";
+import HotelDetailsModal from "../../Models/HotelModals/HotelDetailsModal";
+import HotelFormModal from "../../Models/HotelModals/HotelModalForm";
+import { fetchHotels, addHotel, updateHotel, deleteHotel } from "../../services/HotelServices";
 
 const HotelsPage = () => {
-  const [hotels, setHotels] = useState([
-    {
-      id: 1,
-      name: "Luxury Hotel",
-      location: "Dubai",
-      price: "$200/night",
-      rating: 4.5,
-      phone: "+971 123 4567",
-      email: "contact@luxuryhotel.com",
-      website: "https://luxuryhotel.com",
-      image: "https://plus.unsplash.com/premium_photo-1661964071015-d97428970584?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aG90ZWx8ZW58MHx8MHx8fDA%3D",
-      details: {
-        amenities: ["Pool", "Spa", "Gym", "Free WiFi"],
-        description: "A luxurious hotel with world-class amenities.",
-      },
-    },
-    {
-      id: 2,
-      name: "City Inn",
-      location: "New York",
-      price: "$150/night",
-      rating: 4.0,
-      phone: "+1 234 567 890",
-      email: "info@cityinn.com",
-      website: "https://cityinn.com",
-      image: "https://img.freepik.com/free-photo/luxury-classic-modern-bedroom-suite-hotel_105762-1787.jpg",
-      details: {
-        amenities: ["Restaurant", "Bar", "Free WiFi"],
-        description: "A comfortable hotel in the heart of the city.",
-      },
-    },
-  ]);
-
+  const [hotels, setHotels] = useState([]);
   const [selectedHotel, setSelectedHotel] = useState(null);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
+  const [loading, setLoading] = useState(true); // Loader state
 
-  const handleViewDetails = (hotel) => {
-    setSelectedHotel(hotel);
-    setIsDetailsModalOpen(true);
+  useEffect(() => {
+    loadHotels();
+  }, []);
+
+  const loadHotels = async () => {
+    try {
+      const hotelsData = await fetchHotels();
+      setHotels(hotelsData);
+    } catch (error) {
+      console.error("Error fetching hotels:", error);
+    } finally {
+      setLoading(false); // Stop loading after fetching data
+    }
   };
 
-  const handleAddEditHotel = (hotel = null) => {
-    setIsEdit(!!hotel);
-    setSelectedHotel(hotel);
-    setIsFormModalOpen(true);
+  const handleAddHotel = async (hotel) => {
+    const newHotel = await addHotel(hotel);
+    setHotels([...hotels, newHotel]);
+    setIsFormOpen(false);
   };
 
-  const handleDeleteHotel = (id) => {
+  const handleUpdateHotel = async (id, updatedData) => {
+    await updateHotel(id, updatedData);
+    setHotels(hotels.map((hotel) => (hotel.id === id ? { ...hotel, ...updatedData } : hotel)));
+    setIsFormOpen(false);
+  };
+
+  const handleDeleteHotel = async (id) => {
+    await deleteHotel(id);
     setHotels(hotels.filter((hotel) => hotel.id !== id));
   };
 
-  const handleFormSubmit = (values) => {
-    if (isEdit) {
-      setHotels(hotels.map((hotel) => (hotel.id === selectedHotel.id ? { ...hotel, ...values } : hotel)));
-    } else {
-      setHotels([...hotels, { ...values, id: hotels.length + 1 }]);
-    }
-    setIsFormModalOpen(false);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-blue-200 p-6">
-      <h1 className="text-5xl font-extrabold text-center text-gray-900 mb-10 drop-shadow-lg">
-        Hotel Management
+    <div className="container mx-auto p-6">
+      {/* Page Title */}
+      <h1 className="text-4xl font-extrabold mb-6 text-center text-blue-700 flex items-center justify-center gap-3">
+        <FaHotel className="text-blue-600 text-5xl" /> Hotels Management
       </h1>
-      <div className="flex justify-end mb-8">
+
+      {/* Add Hotel Button */}
+      <div className="flex justify-center mb-6">
         <button
-          onClick={() => handleAddEditHotel()}
-          className="flex items-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl shadow-xl transform transition hover:scale-110"
+          onClick={() => {
+            setSelectedHotel(null);
+            setIsEdit(false);
+            setIsFormOpen(true);
+          }}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 text-lg transition-all"
         >
-          <FaPlus className="mr-2" /> Add New Hotel
+          <FaPlus /> Add Hotel
         </button>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {hotels.map((hotel) => (
-          <div
-            key={hotel.id}
-            className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden"
-          >
-            <img
-              src={hotel.image}
-              alt={hotel.name}
-              className="w-full h-56 object-cover rounded-t-2xl"
-            />
-            <div className="p-6">
-              <h2 className="text-2xl font-bold text-gray-900">{hotel.name}</h2>
-              <p className="text-gray-700 mt-1">{hotel.location}</p>
-              <p className="text-gray-700 mt-1">Phone: {hotel.phone}</p>
-              <p className="text-gray-700 mt-1">Email: {hotel.email}</p>
-              <a href={hotel.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                {hotel.website}
-              </a>
-              <div className="flex items-center mt-2">
-                {[...Array(5)].map((_, i) => (
-                  <span
-                    key={i}
-                    className={`text-lg ${i < Math.floor(hotel.rating) ? "text-yellow-400" : "text-gray-300"}`}
-                  >
-                    ★
-                  </span>
-                ))}
-                <span className="ml-2 text-gray-700 font-medium">{hotel.rating}</span>
+
+      {/* Loader */}
+      {loading ? (
+        <div className="flex justify-center items-center mt-10">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600 border-solid"></div>
+        </div>
+      ) : hotels.length === 0 ? (
+        // No Data Found
+        <div className="flex flex-col items-center justify-center mt-10 text-gray-500">
+          <MdOutlineNoFood className="text-7xl" />
+          <p className="text-xl font-semibold mt-2">No hotels found</p>
+        </div>
+      ) : (
+        // Hotels List
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {hotels.map((hotel) => (
+            <div
+              key={hotel.id}
+              className="bg-white p-5 rounded-xl shadow-lg hover:shadow-2xl transition-all overflow-hidden"
+            >
+              {/* Hotel Image */}
+              <img
+                src={hotel.image || "https://via.placeholder.com/300"}
+                alt={hotel.name}
+                className="w-full h-48 object-cover rounded-lg mb-4"
+              />
+
+              {/* Hotel Details */}
+              <h2 className="text-2xl font-bold text-gray-800">{hotel.name}</h2>
+              <p className="text-gray-600 flex items-center gap-1 text-lg">
+                <MdLocationOn className="text-blue-600" /> {hotel.city}, {hotel.exactAddress}
+              </p>
+              <p className="text-gray-800 font-semibold text-lg mt-1">${hotel.price} / night</p>
+              <p className="text-yellow-500 text-lg mt-1 flex items-center gap-1">
+                <FaStar /> {hotel.rating}
+              </p>
+              <p className="text-gray-800 text-lg mt-1 flex items-center gap-1">
+                <FaBed /> {hotel.bedrooms} Bedrooms
+              </p>
+
+              {/* Services */}
+              <div className="mt-2">
+                <h3 className="text-lg font-semibold text-gray-800">Services:</h3>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {hotel.services.map((service, index) => (
+                    <span key={index} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">
+                      {service}
+                    </span>
+                  ))}
+                </div>
               </div>
-              <p className="text-lg font-semibold text-gray-900 mt-2">{hotel.price}</p>
-              <div className="flex justify-end space-x-3 mt-6">
+
+              {/* Features */}
+              <div className="mt-2">
+                <h3 className="text-lg font-semibold text-gray-800">Features:</h3>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {hotel.features.map((feature, index) => (
+                    <span key={index} className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">
+                      {feature}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 mt-4">
                 <button
-                  onClick={() => handleViewDetails(hotel)}
-                  className="p-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-transform transform hover:scale-110"
+                  onClick={() => setSelectedHotel(hotel)}
+                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-all"
                 >
-                  <FaEye />
+                  <FaEye /> View
                 </button>
                 <button
-                  onClick={() => handleAddEditHotel(hotel)}
-                  className="p-3 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition-transform transform hover:scale-110"
+                  onClick={() => {
+                    setSelectedHotel(hotel);
+                    setIsEdit(true);
+                    setIsFormOpen(true);
+                  }}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-all"
                 >
-                  <FaEdit />
+                  <FaEdit /> Edit
                 </button>
                 <button
                   onClick={() => handleDeleteHotel(hotel.id)}
-                  className="p-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-transform transform hover:scale-110"
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-all"
                 >
-                  <FaTrash />
+                  <FaTrash /> Delete
                 </button>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-      {isDetailsModalOpen && (
-        <HotelDetailsModal
-          hotel={selectedHotel}
-          onClose={() => setIsDetailsModalOpen(false)}
-        />
+          ))}
+        </div>
       )}
-      {isFormModalOpen && (
+
+      {/* Hotel Details Modal */}
+      {selectedHotel && <HotelDetailsModal hotel={selectedHotel} onClose={() => setSelectedHotel(null)} />}
+
+      {/* Hotel Form Modal */}
+      {isFormOpen && (
         <HotelFormModal
           hotel={selectedHotel}
-          onClose={() => setIsFormModalOpen(false)}
-          onSubmit={handleFormSubmit}
+          onClose={() => setIsFormOpen(false)}
+          onSubmit={isEdit ? (values) => handleUpdateHotel(selectedHotel.id, values) : handleAddHotel}
           isEdit={isEdit}
         />
       )}
