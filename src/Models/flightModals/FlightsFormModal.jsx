@@ -2,9 +2,8 @@ import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import Select from "react-select";
-import countries from "world-countries"; // For country and city data
-import airlines from "airline-codes";
-import countryOptions from './../../components/countriesList';
+import countryData from "./../../components/flightsAirportsLists";
+import airlinesList from "./../../components/airLinesList";
 
 const FlightFormModal = ({ flight, toggle, isEdit, setFlights, flights }) => {
   // Initial values for the form
@@ -21,7 +20,9 @@ const FlightFormModal = ({ flight, toggle, isEdit, setFlights, flights }) => {
     departureTime: "",
     arrivalDate: "",
     arrivalTime: "",
-    price: "",
+    economyPrice: "",
+    businessPrice: "",
+    firstClassPrice: "",
     seatsAvailable: "",
   };
 
@@ -39,7 +40,9 @@ const FlightFormModal = ({ flight, toggle, isEdit, setFlights, flights }) => {
     departureTime: Yup.string().required("Departure time is required"),
     arrivalDate: Yup.string().required("Arrival date is required"),
     arrivalTime: Yup.string().required("Arrival time is required"),
-    price: Yup.number().required("Price is required"),
+    economyPrice: Yup.number().required("Economy price is required"),
+    businessPrice: Yup.number().required("Business price is required"),
+    firstClassPrice: Yup.number().required("First Class price is required"),
     seatsAvailable: Yup.number().required("Seats available is required"),
   });
 
@@ -53,33 +56,44 @@ const FlightFormModal = ({ flight, toggle, isEdit, setFlights, flights }) => {
     toggle();
   };
 
+  // Get list of countries
+  const countryOptions = countryData.map((country) => ({
+    value: country.code,
+    label: country.name,
+  }));
 
   // Get list of cities for a selected country
   const getCityOptions = (countryCode) => {
-    const country = countries.find((c) => c.cca2 === countryCode);
+    const country = countryData.find((c) => c.code === countryCode);
     return country
-      ? country.cities.map((city) => ({ value: city, label: city }))
+      ? country.cities.map((city) => ({ value: city.name, label: city.name }))
       : [];
   };
 
-  // Get list of airports for a selected city (mock data)
-  const getAirportOptions = (city) => {
-    // Replace with real airport data if available
-    return [
-      { value: `${city} Airport 1`, label: `${city} Airport 1` },
-      { value: `${city} Airport 2`, label: `${city} Airport 2` },
-    ];
+  // Get list of airports for a selected city
+  const getAirportOptions = (countryCode, cityName) => {
+    const country = countryData.find((c) => c.code === countryCode);
+    if (country) {
+      const city = country.cities.find((c) => c.name === cityName);
+      return city
+        ? city.airports.map((airport) => ({
+            value: airport.code,
+            label: `${airport.name} (${airport.code})`,
+          }))
+        : [];
+    }
+    return [];
   };
 
   // Get list of airlines
-  const airlineOptions = airlines.map((airline) => ({
-    value: airline.name,
+  const airlineOptions = airlinesList.map((airline) => ({
+    value: airline.code,
     label: airline.name,
   }));
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="bg-white rounded-xl shadow-2xl w-11/12 md:w-2/3 lg:w-1/2 p-6">
+      <div className="bg-white rounded-xl shadow-2xl w-11/12 md:w-2/3 lg:w-1/2 p-6 max-h-[90vh] overflow-y-auto">
         {/* Modal Header */}
         <div className="flex justify-between items-center border-b pb-4 mb-4">
           <h2 className="text-2xl font-bold text-gray-800">
@@ -184,8 +198,8 @@ const FlightFormModal = ({ flight, toggle, isEdit, setFlights, flights }) => {
                 <div>
                   <label className="block text-gray-700">From Airport</label>
                   <Select
-                    options={getAirportOptions(values.fromCity)}
-                    value={getAirportOptions(values.fromCity).find(
+                    options={getAirportOptions(values.fromCountry, values.fromCity)}
+                    value={getAirportOptions(values.fromCountry, values.fromCity).find(
                       (option) => option.value === values.fromAirport
                     )}
                     onChange={(selected) =>
@@ -249,8 +263,8 @@ const FlightFormModal = ({ flight, toggle, isEdit, setFlights, flights }) => {
                 <div>
                   <label className="block text-gray-700">To Airport</label>
                   <Select
-                    options={getAirportOptions(values.toCity)}
-                    value={getAirportOptions(values.toCity).find(
+                    options={getAirportOptions(values.toCountry, values.toCity)}
+                    value={getAirportOptions(values.toCountry, values.toCity).find(
                       (option) => option.value === values.toAirport
                     )}
                     onChange={(selected) =>
@@ -326,16 +340,46 @@ const FlightFormModal = ({ flight, toggle, isEdit, setFlights, flights }) => {
                   />
                 </div>
 
-                {/* Price */}
+                {/* Economy Price */}
                 <div>
-                  <label className="block text-gray-700">Price</label>
+                  <label className="block text-gray-700">Economy Price</label>
                   <Field
                     type="number"
-                    name="price"
+                    name="economyPrice"
                     className="w-full border p-2 rounded"
                   />
                   <ErrorMessage
-                    name="price"
+                    name="economyPrice"
+                    component="div"
+                    className="text-red-500 text-sm"
+                  />
+                </div>
+
+                {/* Business Price */}
+                <div>
+                  <label className="block text-gray-700">Business Price</label>
+                  <Field
+                    type="number"
+                    name="businessPrice"
+                    className="w-full border p-2 rounded"
+                  />
+                  <ErrorMessage
+                    name="businessPrice"
+                    component="div"
+                    className="text-red-500 text-sm"
+                  />
+                </div>
+
+                {/* First Class Price */}
+                <div>
+                  <label className="block text-gray-700">First Class Price</label>
+                  <Field
+                    type="number"
+                    name="firstClassPrice"
+                    className="w-full border p-2 rounded"
+                  />
+                  <ErrorMessage
+                    name="firstClassPrice"
                     component="div"
                     className="text-red-500 text-sm"
                   />

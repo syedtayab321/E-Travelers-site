@@ -8,7 +8,7 @@ import OrdersPage from "../SidebarSections/OrdersSection";
 import ReviewsPage from "../SidebarSections/ReviewsSection";
 import HotelsPage from "../SidebarSections/HotelSection";
 const MainAdminPage = () => {
-  const [selectedSection, setSelectedSection] = useState("home");
+  const [selectedSection, setSelectedSection] = useState("flights");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const handleSelect = (section) => {
